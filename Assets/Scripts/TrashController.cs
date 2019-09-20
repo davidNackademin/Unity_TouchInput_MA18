@@ -2,24 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TouchInput : MonoBehaviour
+public class TrashController : MonoBehaviour
 {
 
     SpriteRenderer spriteRenderer;
     bool isDragging = false;
     int fingerId = -1;
-
+    public LayerMask trashCanLayer;
+    Rigidbody2D rigidbody;
+    float initialGravityScale;
 
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.color = Color.red;
+        rigidbody = GetComponent<Rigidbody2D>();
+        initialGravityScale = rigidbody.gravityScale;
     }
 
 
     private void Update()
     {
        // ChangeColorOnPress();
+
+        if (transform.position.y < -10f)
+        {
+            Destroy(gameObject);
+        }
+
 
         foreach( Touch touch  in Input.touches)
         {
@@ -36,7 +46,8 @@ public class TouchInput : MonoBehaviour
                     {
                         isDragging = true;
                         fingerId = touch.fingerId;
-
+                        rigidbody.gravityScale = 0;
+                        rigidbody.velocity = Vector2.zero;
 
                     }
                     break;
@@ -53,6 +64,24 @@ public class TouchInput : MonoBehaviour
                     {
                         isDragging = false;
                         fingerId = -1;
+
+                        RaycastHit2D trashCanHit = Physics2D.Raycast(transform.position, Vector2.zero,
+                            Mathf.Infinity, trashCanLayer);
+
+                        if (trashCanHit.collider != null)
+                        {
+
+                            TrashcanController trashcan = trashCanHit.collider.gameObject.GetComponent<TrashcanController>();
+                            trashcan.Trashed();
+                            Destroy(gameObject);
+
+                        }
+                        rigidbody.gravityScale = initialGravityScale;
+
+
+                        // träffar vi papperskorgen
+                        // ta bort trash
+                        // ge en poäng
                     }
 
 
@@ -66,7 +95,7 @@ public class TouchInput : MonoBehaviour
 
     }
 
-
+   
 
 
 
